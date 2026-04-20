@@ -2,6 +2,7 @@ import logging
 import asyncio
 import aiosqlite
 import os
+import re
 from gtts import gTTS
 from aiogram import Bot, Dispatcher, types, Router
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
@@ -9,6 +10,39 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 import random
+
+# Замена английских переводов на русские для существующих записей в БД
+ENGLISH_TO_RUSSIAN = {
+    '走': ('Идти', 'цзоу'),
+    '吃': ('Есть', 'чи'),
+    '哪里': ('Где', 'нали'),
+    '我': ('Я', 'во'),
+    '这个': ('Это', 'чжэгэ'),
+    '她': ('Она', 'та'),
+    '工作': ('Работа', 'гунцзо'),
+    '你好': ('Привет', 'нихао'),
+    '再见': ('До свидания', 'цзайцзянь'),
+    '什么': ('Что', 'шэньмэ'),
+    '是': ('Да', 'ши'),
+    '你': ('Ты', 'ни'),
+    '他们': ('Они', 'тамэнь'),
+    '说': ('Говорить', 'шо'),
+    '他': ('Он', 'та'),
+    '学习': ('Учиться', 'сюэси'),
+    '看': ('Смотреть', 'кань'),
+    '谢谢': ('Спасибо', 'сесе'),
+    '喝': ('Пить', 'хэ'),
+    '多少': ('Сколько', 'дошао'),
+    '请': ('Пожалуйста', 'цин'),
+    '我们': ('Мы', 'вомэнь'),
+    '不': ('Нет', 'бу'),
+    '爱': ('Любить', 'ай'),
+    '那个': ('То', 'нэгэ'),
+    '喜欢': ('Нравиться', 'сихуань'),
+    '写': ('Писать', 'се'),
+    '读': ('Читать', 'ду'),
+    '听': ('Слушать', 'тин'),
+}
 
 API_TOKEN = "7897594146:AAEvSr0JN96-2ijYLkUTfTVX7a1W2APNtIE"
 
@@ -43,10 +77,10 @@ main_kb = ReplyKeyboardMarkup(
 
 async def create_tables():
     async with aiosqlite.connect("chinese_bot.db") as db:
-        # Таблица слов
+        # Таблица слов (UNIQUE добавляется через индекс ниже — для совместимости со старой БД)
         await db.execute('''CREATE TABLE IF NOT EXISTS words (
             id INTEGER PRIMARY KEY,
-            chinese TEXT UNIQUE,
+            chinese TEXT,
             pinyin TEXT,
             translation TEXT,
             russian_transcription TEXT
@@ -56,10 +90,44 @@ async def create_tables():
         await db.execute('''CREATE TABLE IF NOT EXISTS tourist_phrases (
             id INTEGER PRIMARY KEY,
             category TEXT,
-            chinese TEXT UNIQUE,
+            chinese TEXT,
             pinyin TEXT,
             translation TEXT
         )''')
+
+        # Миграция 1: удаляем дубликаты, оставляя по одной записи на иероглиф
+        await db.execute(
+            'DELETE FROM words WHERE id NOT IN (SELECT MIN(id) FROM words GROUP BY chinese)'
+        )
+        await db.execute(
+            'DELETE FROM tourist_phrases WHERE id NOT IN '
+            '(SELECT MIN(id) FROM tourist_phrases GROUP BY category, chinese)'
+        )
+
+        # Миграция 2: заменяем английские переводы на русские
+        for chinese, (translation, transcr) in ENGLISH_TO_RUSSIAN.items():
+            await db.execute(
+                'UPDATE words SET translation = ?, russian_transcription = ? WHERE chinese = ?',
+                (translation, transcr, chinese)
+            )
+
+        # Миграция 3: удаляем любые оставшиеся записи с английским переводом
+        async with db.execute('SELECT id, translation FROM words') as cursor:
+            all_rows = await cursor.fetchall()
+        bad_ids = [
+            row_id for row_id, trans in all_rows
+            if trans and re.search(r'[a-zA-Z]', trans) and not re.search(r'[а-яА-ЯёЁ]', trans)
+        ]
+        if bad_ids:
+            placeholders = ','.join('?' * len(bad_ids))
+            await db.execute(f'DELETE FROM words WHERE id IN ({placeholders})', bad_ids)
+
+        # Миграция 4: уникальные индексы (чтобы INSERT OR IGNORE работал)
+        await db.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_words_chinese ON words(chinese)')
+        await db.execute(
+            'CREATE UNIQUE INDEX IF NOT EXISTS idx_phrases_cat_chinese '
+            'ON tourist_phrases(category, chinese)'
+        )
 
         # Начальный словарь
         initial_words = [
