@@ -146,7 +146,7 @@ async def show_dictionary(message: types.Message):
                 return
             response = "📖 Словарь:\n\n"
             for word in words:
-                response += f"{word[0]} ({word[1]}) — {word[2]} [{word[3]}]\n"
+                response += f"{word[0]} ({word[1]}) - {word[2]} [{word[3]}]\n"
             await message.answer(response[:4096])
 
 
@@ -155,13 +155,13 @@ async def show_grammar(message: types.Message):
     grammar_rules = (
         "📚 Основные правила китайской грамматики:\n\n"
         "1️⃣ Порядок слов: подлежащее + сказуемое + дополнение.\n"
-        "2️⃣ Глаголы не изменяются по времени — используются показатели времени.\n"
+        "2️⃣ Глаголы не изменяются по времени - используются показатели времени.\n"
         "3️⃣ Вопросы образуются с помощью частицы 吗 (ma) или альтернативных конструкций.\n"
         "4️⃣ Частицы 了 (le) и 过 (guò) обозначают завершённость действия.\n\n"
         "Примеры предложений:\n"
-        "🔹 我是学生。(Wǒ shì xuéshēng.) — Я студент.\n"
-        "🔹 你喜欢喝茶吗？(Nǐ xǐhuān hē chá ma?) — Ты любишь пить чай?\n"
-        "🔹 他昨天去了北京。(Tā zuótiān qùle Běijīng.) — Он вчера ездил в Пекин.\n"
+        "🔹 我是学生。(Wǒ shì xuéshēng.) - Я студент.\n"
+        "🔹 你喜欢喝茶吗？(Nǐ xǐhuān hē chá ma?) - Ты любишь пить чай?\n"
+        "🔹 他昨天去了北京。(Tā zuótiān qùle Běijīng.) - Он вчера ездил в Пекин.\n"
     )
     await message.answer(grammar_rules)
 
@@ -262,7 +262,7 @@ async def pronunciation_practice(message: types.Message):
         with open(filepath, "rb") as audio_file:
             await message.answer_voice(
                 types.BufferedInputFile(audio_file.read(), filename=f"{filename}.mp3"),
-                caption=f"{chinese} ({pinyin}) — {translation}"
+                caption=f"{chinese} ({pinyin}) - {translation}"
             )
 
 
@@ -284,21 +284,21 @@ async def show_tourist_menu(message: types.Message):
 async def show_main_phrases(message: types.Message):
     main_words = (
         "💬 Основные фразы:\n\n"
-        "1. Здравствуйте! — 你好！(Nǐ hǎo!) — Нихао!\n"
-        "2. Спасибо! — 谢谢！(Xièxiè!) — Сесе!\n"
-        "3. Пожалуйста. — 请。(Qǐng.) — Цин.\n"
-        "4. Извините. — 对不起。(Duìbùqǐ.) — Дуйбуци.\n"
-        "5. Где находится туалет? — 洗手间在哪里？(Xǐshǒujiān zài nǎlǐ?) — Сишоуцзянь цзай нали?\n"
-        "6. Сколько стоит? — 这个多少钱？(Zhège duōshǎo qián?) — Чжэгэ дошао цянь?\n"
-        "7. Я не понимаю. — 我不懂。(Wǒ bù dǒng.) — Во бу дун.\n"
-        "8. Помогите! — 救命！(Jiùmìng!) — Цзюмин!\n"
-        "9. Где ближайшая станция метро? — 最近的地铁站在哪里？(Zuìjìn de dìtiě zhàn zài nǎlǐ?) — Цзуйцзинь дэ дитечжань цзай нали?\n"
-        "10. Я хочу это купить. — 我想买这个。(Wǒ xiǎng mǎi zhège.) — Во сян май чжэгэ.\n"
-        "11. Можно меню, пожалуйста? — 请给我菜单。(Qǐng gěi wǒ càidān.) — Цин гэй во цайдань.\n"
-        "12. Как добраться до...? — 怎么去...? (Zěnme qù...?) — Цзэньмэ цюй...?\n"
-        "13. У вас есть вегетарианские блюда? — 你们有素菜吗？(Nǐmen yǒu sùcài ma?) — Нимэнь ю суцай ма?\n"
-        "14. У меня аллергия на... — 我对...过敏。(Wǒ duì... guòmǐn.) — Во дуй... гоминь.\n"
-        "15. Я потерялся. — 我迷路了。(Wǒ mílù le.) — Во милу лэ."
+        "1. Здравствуйте! - 你好！(Nǐ hǎo!) - Нихао!\n"
+        "2. Спасибо! - 谢谢！(Xièxiè!) - Сесе!\n"
+        "3. Пожалуйста. - 请。(Qǐng.) - Цин.\n"
+        "4. Извините. - 对不起。(Duìbùqǐ.) - Дуйбуци.\n"
+        "5. Где находится туалет? - 洗手间在哪里？(Xǐshǒujiān zài nǎlǐ?) - Сишоуцзянь цзай нали?\n"
+        "6. Сколько стоит? - 这个多少钱？(Zhège duōshǎo qián?) - Чжэгэ дошао цянь?\n"
+        "7. Я не понимаю. - 我不懂。(Wǒ bù dǒng.) - Во бу дун.\n"
+        "8. Помогите! - 救命！(Jiùmìng!) - Цзюмин!\n"
+        "9. Где ближайшая станция метро? - 最近的地铁站在哪里？(Zuìjìn de dìtiě zhàn zài nǎlǐ?) - Цзуйцзинь дэ дитечжань цзай нали?\n"
+        "10. Я хочу это купить. - 我想买这个。(Wǒ xiǎng mǎi zhège.) - Во сян май чжэгэ.\n"
+        "11. Можно меню, пожалуйста? - 请给我菜单。(Qǐng gěi wǒ càidān.) - Цин гэй во цайдань.\n"
+        "12. Как добраться до...? - 怎么去...? (Zěnme qù...?) - Цзэньмэ цюй...?\n"
+        "13. У вас есть вегетарианские блюда? - 你们有素菜吗？(Nǐmen yǒu sùcài ma?) - Нимэнь ю суцай ма?\n"
+        "14. У меня аллергия на... - 我对...过敏。(Wǒ duì... guòmǐn.) - Во дуй... гоминь.\n"
+        "15. Я потерялся. - 我迷路了。(Wǒ mílù le.) - Во милу лэ."
     )
     await message.answer(main_words)
 
@@ -316,7 +316,7 @@ async def show_transport(message: types.Message):
 
     response = "🚇 Транспорт:\n\n"
     for idx, (chinese, pinyin, translation) in enumerate(phrases, 1):
-        response += f"{idx}. {chinese} ({pinyin}) — {translation}\n"
+        response += f"{idx}. {chinese} ({pinyin}) - {translation}\n"
     await message.answer(response)
 
 
@@ -333,7 +333,7 @@ async def show_greetings(message: types.Message):
 
     response = "🙏 Приветствия:\n\n"
     for idx, (chinese, pinyin, translation) in enumerate(phrases, 1):
-        response += f"{idx}. {chinese} ({pinyin}) — {translation}\n"
+        response += f"{idx}. {chinese} ({pinyin}) - {translation}\n"
     await message.answer(response)
 
 
