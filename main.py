@@ -249,20 +249,20 @@ async def generate_audio(chinese_text: str, filename: str) -> str:
 @router.message(lambda message: message.text == "🔊 Произношение")
 async def pronunciation_practice(message: types.Message):
     async with aiosqlite.connect("chinese_bot.db") as db:
-        async with db.execute("SELECT id, chinese, pinyin FROM words ORDER BY RANDOM() LIMIT 3") as cursor:
+        async with db.execute("SELECT id, chinese, pinyin, translation FROM words ORDER BY RANDOM() LIMIT 3") as cursor:
             words = await cursor.fetchall()
 
     if not words:
         await message.answer("В словаре пока нет слов для произношения.")
         return
 
-    for word_id, chinese, pinyin in words:
+    for word_id, chinese, pinyin, translation in words:
         filename = f"word_{word_id}"
         filepath = await generate_audio(chinese, filename)
         with open(filepath, "rb") as audio_file:
             await message.answer_voice(
                 types.BufferedInputFile(audio_file.read(), filename=f"{filename}.mp3"),
-                caption=f"{chinese} ({pinyin})"
+                caption=f"{chinese} ({pinyin}) — {translation}"
             )
 
 
