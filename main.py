@@ -85,7 +85,12 @@ async def create_tables():
             ("书", "shū", "Книга", "шу"),
         ]
         await db.executemany(
-            'INSERT OR IGNORE INTO words (chinese, pinyin, translation, russian_transcription) VALUES (?, ?, ?, ?)',
+            '''INSERT INTO words (chinese, pinyin, translation, russian_transcription)
+               VALUES (?, ?, ?, ?)
+               ON CONFLICT(chinese) DO UPDATE SET
+                   pinyin=excluded.pinyin,
+                   translation=excluded.translation,
+                   russian_transcription=excluded.russian_transcription''',
             initial_words
         )
 
@@ -103,12 +108,20 @@ async def create_tables():
             ('Транспорт', '我要买票', 'wǒ yào mǎi piào', 'Я хочу купить билет'),
         ]
         await db.executemany(
-            'INSERT OR IGNORE INTO tourist_phrases (category, chinese, pinyin, translation) VALUES (?, ?, ?, ?)',
+            '''INSERT INTO tourist_phrases (category, chinese, pinyin, translation)
+               VALUES (?, ?, ?, ?)
+               ON CONFLICT(chinese) DO UPDATE SET
+                   category=excluded.category,
+                   pinyin=excluded.pinyin,
+                   translation=excluded.translation''',
             phrases
         )
 
         # Удалим возможную ошибочную запись из старых версий БД
         await db.execute("DELETE FROM words WHERE chinese = 'книга'")
+        # Удалим старые записи с английскими переводами (содержат латиницу)
+        await db.execute("DELETE FROM words WHERE translation GLOB '*[A-Za-z]*'")
+        await db.execute("DELETE FROM tourist_phrases WHERE translation GLOB '*[A-Za-z]*'")
         await db.commit()
 
 
